@@ -1,0 +1,21 @@
+name: wordle
+description: An API and command line tool for finding Wordle words
+version: 1.0.0
+#repository: https://github.com/pohara60/dart-wordle
+
+environment:
+    sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+    archive: ^3.1.2
+    args: ^2.0.0
+    build: ^2.0.0
+
+dev_dependencies:
+    build_runner: ^1.10.11
+    build_web_compilers: ^2.16.0
+    pedantic: ^1.9.0
+    test: ^1.14.4
+
+executables:
+    wordle:
