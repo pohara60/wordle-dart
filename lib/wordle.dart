@@ -4,8 +4,6 @@
 /// https://en.wikipedia.org/wiki/Collins_Wordle_Words).
 library wordle;
 
-import 'dart:collection';
-
 import './src/buffer.dart';
 //import './Wordle_builder.dart';
 
@@ -102,7 +100,7 @@ class Wordle {
   ///
   /// If [expand] is true then wildcards are expanded.
   Set<String> lookup(String word, {bool expand = false}) {
-    var matches = _dictionaryLookup('', word);
+    var matches = _lookup('', word);
     if (matches.isNotEmpty) {
       if (!expand) {
         return {word};
@@ -111,6 +109,30 @@ class Wordle {
       }
     }
     return {};
+  }
+
+  Set<String> _lookup(String start, String rest) {
+    // print('start=$start');
+    // print('rest=$rest');
+    var index = rest.indexOf('?');
+    // print('index=$index');
+    if (index == -1) {
+      var word = start + rest;
+      if (_dictionary.contains(word)) {
+        // print('dictionaryLookup: dictionary contains $word');
+        return {word};
+      }
+      return {};
+    }
+
+    var prefix = rest.substring(0, index);
+    // print('prefix=$prefix');
+    // Wildcard
+    var matches = <String>{};
+    for (var c in _alphabet) {
+      matches.addAll(_lookup(start + prefix + c, rest.substring(index + 1)));
+    }
+    return matches;
   }
 
   void addCharsToSet(Set set, String str) {
@@ -136,36 +158,11 @@ class Wordle {
         if (!allChar.contains(c)) invalid.add(c);
       }
     }
-    var matches = _dictionarySolution('', goodStr, maybe, invalid);
+    var matches = _solution('', goodStr, maybe, invalid);
     return matches;
   }
 
-  Set<String> _dictionaryLookup(String start, String rest) {
-    // print('start=$start');
-    // print('rest=$rest');
-    var index = rest.indexOf('?');
-    // print('index=$index');
-    if (index == -1) {
-      var word = start + rest;
-      if (_dictionary.contains(word)) {
-        // print('dictionaryLookup: dictionary contains $word');
-        return {word};
-      }
-      return {};
-    }
-
-    var prefix = rest.substring(0, index);
-    // print('prefix=$prefix');
-    // Wildcard
-    var matches = <String>{};
-    for (var c in _alphabet) {
-      matches.addAll(
-          _dictionaryLookup(start + prefix + c, rest.substring(index + 1)));
-    }
-    return matches;
-  }
-
-  Set<String> _dictionarySolution(
+  Set<String> _solution(
       String start, String rest, List<String> maybe, Set<String> invalid,
       [String maybeStr = '']) {
     // print('start=$start');
@@ -186,7 +183,9 @@ class Wordle {
           for (var i = 0; i < m.length; i++) {
             var c = m[i];
             if (c != '?') {
-              if (!checkStr.contains(c)) return {};
+              if (!checkStr.contains(c)) {
+                return {};
+              }
               checkStr = checkStr.replaceFirst(c, '?');
             }
           }
@@ -205,7 +204,7 @@ class Wordle {
     for (var c in _alphabet.where((c) =>
         !invalid.contains(c) &&
         !maybe.any((str) => str.length > charIndex && str[charIndex] == c))) {
-      matches.addAll(_dictionarySolution(
+      matches.addAll(_solution(
           prefix + c, rest.substring(index + 1), maybe, invalid, maybeStr + c));
     }
     return matches;

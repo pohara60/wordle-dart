@@ -37,7 +37,7 @@
             ],
         },
         {
-            "name": "solution 1",
+            "name": "solution 1 voice",
             "request": "launch",
             "type": "dart",
             "program": "bin/wordle.dart",
@@ -45,14 +45,27 @@
                 "solution",
                 "-g",
                 "?o?ce",
-                "-m",
-                "c??e?",
                 "cones",
                 "force"
             ],
         },
         {
-            "name": "solution 2",
+            "name": "solution 1 voice -b",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "?o?ce",
+                "-b",
+                "cnsfr",
+                "cones",
+                "force"
+            ],
+        },
+        {
+            "name": "solution 2 vouch",
             "request": "launch",
             "type": "dart",
             "program": "bin/wordle.dart",
@@ -62,11 +75,29 @@
                 "?o???",
                 "-m",
                 "c????",
-                "cones"
+                "-m",
+                "????c",
+                "cones",
+                "topic"
             ],
         },
         {
-            "name": "solution 3",
+            "name": "solution 2 vouch -b",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "?o???",
+                "-b",
+                "nestpi",
+                "cones",
+                "topic"
+            ],
+        },
+        {
+            "name": "solution 3 piece",
             "request": "launch",
             "type": "dart",
             "program": "bin/wordle.dart",
@@ -82,7 +113,23 @@
             ],
         },
         {
-            "name": "solution 4",
+            "name": "solution 3 piece -b",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "???ce",
+                "-b",
+                "onstraju",
+                "cones",
+                "trace",
+                "juice"
+            ],
+        },
+        {
+            "name": "solution 4 geese",
             "request": "launch",
             "type": "dart",
             "program": "bin/wordle.dart",
@@ -102,7 +149,7 @@
             ],
         },
         {
-            "name": "solution 5",
+            "name": "solution 4 geese -b",
             "request": "launch",
             "type": "dart",
             "program": "bin/wordle.dart",
@@ -110,12 +157,81 @@
                 "solution",
                 "-g",
                 "????e",
-                "-m",
-                "s???",
-                "-m",
-                "???s",
+                "-b",
+                "contariu",
                 "cones",
-                "stare"
+                "stare",
+                "issue"
+            ],
+        },
+        {
+            "name": "solution 5 issue",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "??s?e",
+                "-m",
+                "????s",
+                "-m",
+                "s????",
+                "-m",
+                "???s?",
+                "cones",
+                "stare",
+                "posse"
+            ],
+        },
+        {
+            "name": "solution 5 issue -b",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "??s?e",
+                "-b",
+                "contarp",
+                "cones",
+                "stare",
+                "posse"
+            ],
+        },
+        {
+            "name": "solution 6 stead",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "stea?",
+                "cones",
+                "stare",
+                "steal",
+                "steak",
+                "steam"
+            ],
+        },
+        {
+            "name": "solution 7 stead -b",
+            "request": "launch",
+            "type": "dart",
+            "program": "bin/wordle.dart",
+            "args": [
+                "solution",
+                "-g",
+                "stea?",
+                "-b",
+                "conrlkm",
+                "cones",
+                "stare",
+                "steal",
+                "steak",
+                "steam"
             ],
         },
         {
