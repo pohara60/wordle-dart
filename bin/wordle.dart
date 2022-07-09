@@ -31,21 +31,15 @@ class LookupCommand extends Command {
   @override
   final description = 'Lookup <arguments> in dictionary.';
 
-  LookupCommand() {
-    argParser.addFlag(
-      'expand',
-      abbr: 'e',
-      negatable: false,
-      help: 'Output expanded wildcards.',
-    );
-  }
+  // ignore: empty_constructor_bodies
+  LookupCommand();
 
   @override
   void run() {
     // Get and print lookup
     final wordle = Wordle();
     for (var word in argResults!.rest) {
-      var matches = wordle.lookup(word, expand: argResults!['expand'] ?? false);
+      var matches = wordle.lookup(word, expand: true);
       printMatches(wordle, 'Lookup', word, matches);
     }
   }
@@ -144,7 +138,7 @@ For example:
     // Get and print solutions
     final wordle = Wordle();
     var solutions = wordle.solution(good, maybe, guesses);
-    var args = '-g $good -m $maybe $guesses';
+    var args = '-g $good -b ${bad ?? '""'} -m $maybe $guesses';
     printMatches(wordle, 'Solution', args, solutions);
   }
 }
