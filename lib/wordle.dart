@@ -108,40 +108,40 @@ class Wordle {
     }
   }
 
-  /// **solution** for good, maybe and bad letters, with guesses.
+  /// **solution** for correct, present and absent letters, with guesses.
   ///
-  Set<String> solution(
-      String? good, List<String> maybe, String? bad, List<String> guesses) {
-    var goodStr = good ?? '?????';
-    var badStr = bad ?? '?????';
+  Set<String> solution(String? correct, List<String> present, String? absent,
+      List<String> guesses) {
+    var correctStr = correct ?? '?????';
+    var absentStr = absent ?? '?????';
     var invalid = <String>{};
     var allChar = <String>{};
-    addCharsToSet(allChar, goodStr);
-    for (var maybeStr in maybe) {
-      addCharsToSet(allChar, maybeStr);
+    addCharsToSet(allChar, correctStr);
+    for (var presentStr in present) {
+      addCharsToSet(allChar, presentStr);
     }
-    addCharsToSet(invalid, badStr);
+    addCharsToSet(invalid, absentStr);
     for (var g in guesses) {
       for (var i = 0; i < g.length; i++) {
         var c = g[i];
         if (!allChar.contains(c)) invalid.add(c);
       }
     }
-    var matches = _solution('', goodStr, maybe, invalid);
+    var matches = _solution('', correctStr, present, invalid);
     return matches;
   }
 
   Set<String> _solution(
-      String start, String rest, List<String> maybe, Set<String> invalid,
-      [String maybeStr = '']) {
+      String start, String rest, List<String> present, Set<String> invalid,
+      [String presentStr = '']) {
     var index = rest.indexOf('?');
     if (index == -1) {
       var word = start + rest;
-      maybeStr = maybeStr.padRight(word.length, '?');
+      presentStr = presentStr.padRight(word.length, '?');
       if (_dictionary.contains(word)) {
-        // Check that the maybe characters appear in non-fixed positions
-        for (var m in maybe) {
-          var checkStr = maybeStr;
+        // Check that the present characters appear in non-fixed positions
+        for (var m in present) {
+          var checkStr = presentStr;
           for (var i = 0; i < m.length; i++) {
             var c = m[i];
             if (c != '?') {
@@ -159,14 +159,14 @@ class Wordle {
 
     // Wildcard
     var prefix = start + rest.substring(0, index);
-    maybeStr = maybeStr.padRight(prefix.length, '?');
+    presentStr = presentStr.padRight(prefix.length, '?');
     var matches = <String>{};
     var charIndex = start.length + index;
     for (var c in _alphabet.where((c) =>
         !invalid.contains(c) &&
-        !maybe.any((str) => str.length > charIndex && str[charIndex] == c))) {
-      matches.addAll(_solution(
-          prefix + c, rest.substring(index + 1), maybe, invalid, maybeStr + c));
+        !present.any((str) => str.length > charIndex && str[charIndex] == c))) {
+      matches.addAll(_solution(prefix + c, rest.substring(index + 1), present,
+          invalid, presentStr + c));
     }
     return matches;
   }

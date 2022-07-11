@@ -52,73 +52,73 @@ class SolutionCommand extends Command {
   final description = '''Get solutions.
   
 The [arguments] are the guesses so far.
-The --good option may specify correct letters.
-The --bad option may specify incorrect letters.
-The --maybe option may specify incorrectly placed letters.
-Only one of --maybe and --bad are required.
+The --correct option may specify correct letters.
+The --absent option may specify incorrect letters.
+The --present option may specify incorrectly placed letters.
+Only one of --present and --absent are required.
 
 For example:
-  wordle solution --good ????e --bad contariu cones stare issue''';
+  wordle solution --correct ????e --absent contariu cones stare issue''';
 
   SolutionCommand() {
     argParser.addOption(
-      'bad',
-      abbr: 'b',
+      'absent',
+      abbr: 'a',
       help:
           'Incorrect letters, i.e. letters that cannot appear, arbitrary length.',
     );
     argParser.addOption(
-      'good',
-      abbr: 'g',
+      'correct',
+      abbr: 'c',
       help:
           'Correctly placed letters, with ? for unknown letters, 5 letters long.',
     );
     argParser.addMultiOption(
-      'maybe',
-      abbr: 'm',
+      'present',
+      abbr: 'p',
       help:
-          'Incorrectly placed letters, excluding good letters, 5 letters long. Specify multiple times for multiple positions.',
+          'Incorrectly placed letters, excluding correct letters, 5 letters long. Specify multiple times for multiple positions.',
     );
   }
 
   @override
   void run() {
     // Validate options
-    String good = argResults!['good'] ?? '?????';
-    String? bad = argResults!['bad'];
-    List<String> maybe = argResults!['maybe'];
+    String correct = argResults!['correct'] ?? '?????';
+    String? absent = argResults!['absent'];
+    List<String> present = argResults!['present'];
     var guesses = argResults!.rest;
-    // The bad and maybe options are alternatives, compute maybe from bad and guesses
-    // TODO support bad with no guesses
-    if (bad != null) {
+    // The absent and present options are alternatives, compute present from absent and guesses
+    // TODO support absent with no guesses
+    if (absent != null) {
       var newMaybe = <String>[];
-      var oldMaybe = List.from(maybe);
+      var oldMaybe = List.from(present);
       for (var g in guesses) {
-        // Remove good and bad characters from guess to give maybe
+        // Remove correct and absent characters from guess to give present
         var m = '';
         var rest = '';
         for (var i = 0; i < g.length; i++) {
           var c = g[i];
-          if (good[i] == c) {
+          if (correct[i] == c) {
             rest += '?';
             m += '?';
-          } else if (bad.contains(c)) {
-            rest += good[i];
+          } else if (absent.contains(c)) {
+            rest += correct[i];
             m += '?';
           } else {
-            rest += good[i];
+            rest += correct[i];
             m += c;
           }
         }
-        // Remove maybe characters that appear in remaining good
+        // Remove present characters that appear in remaining correct
         for (var i = 0; i < m.length; i++) {
           var c = m[i];
           if (c != '?' && rest.contains(c)) {
-            // Character in good, so consume it
+            // Character in correct, so consume it
             rest = rest.replaceFirst(c, '?');
             m = m.replaceFirst(c, '?', i);
           } else if (c != '?' && m.contains(c, i + 1)) {
-            // Character is duplicated in maybe, so remove this one
+            // Character is duplicated in present, so remove this one
             m = m.replaceFirst(c, '?', i);
           }
         }
@@ -134,12 +134,12 @@ For example:
       if (oldMaybe.isNotEmpty) {
         print('Inconsistent options, missingm $oldMaybe');
       }
-      maybe = newMaybe;
+      present = newMaybe;
     }
     // Get and print solutions
     final wordle = Wordle();
-    var solutions = wordle.solution(good, maybe, bad, guesses);
-    var args = '-g $good -b ${bad ?? '""'} -m $maybe $guesses';
+    var solutions = wordle.solution(correct, present, absent, guesses);
+    var args = '-c $correct -a ${absent ?? '""'} -p $present $guesses';
     printMatches(wordle, 'Solution', args, solutions);
   }
 }
