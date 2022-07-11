@@ -39,7 +39,7 @@ class LookupCommand extends Command {
     // Get and print lookup
     final wordle = Wordle();
     for (var word in argResults!.rest) {
-      var matches = wordle.lookup(word, expand: true);
+      var matches = wordle.lookup(word);
       printMatches(wordle, 'Lookup', word, matches);
     }
   }
@@ -88,54 +88,6 @@ For example:
     String? absent = argResults!['absent'];
     List<String> present = argResults!['present'];
     var guesses = argResults!.rest;
-    // The absent and present options are alternatives, compute present from absent and guesses
-    // TODO support absent with no guesses
-    if (absent != null) {
-      var newMaybe = <String>[];
-      var oldMaybe = List.from(present);
-      for (var g in guesses) {
-        // Remove correct and absent characters from guess to give present
-        var m = '';
-        var rest = '';
-        for (var i = 0; i < g.length; i++) {
-          var c = g[i];
-          if (correct[i] == c) {
-            rest += '?';
-            m += '?';
-          } else if (absent.contains(c)) {
-            rest += correct[i];
-            m += '?';
-          } else {
-            rest += correct[i];
-            m += c;
-          }
-        }
-        // Remove present characters that appear in remaining correct
-        for (var i = 0; i < m.length; i++) {
-          var c = m[i];
-          if (c != '?' && rest.contains(c)) {
-            // Character in correct, so consume it
-            rest = rest.replaceFirst(c, '?');
-            m = m.replaceFirst(c, '?', i);
-          } else if (c != '?' && m.contains(c, i + 1)) {
-            // Character is duplicated in present, so remove this one
-            m = m.replaceFirst(c, '?', i);
-          }
-        }
-        if (m != '?????') {
-          if (!newMaybe.contains(m)) {
-            newMaybe.add(m);
-            if (oldMaybe.isNotEmpty && !oldMaybe.remove(m)) {
-              print('Inconsistent options, missing -m $m');
-            }
-          }
-        }
-      }
-      if (oldMaybe.isNotEmpty) {
-        print('Inconsistent options, missingm $oldMaybe');
-      }
-      present = newMaybe;
-    }
     // Get and print solutions
     final wordle = Wordle();
     var solutions = wordle.solution(correct, present, absent, guesses);

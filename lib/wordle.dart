@@ -65,16 +65,9 @@ class Wordle {
 
   /// **lookup** legal words, perhaps includng the wildcard '?'.
   ///
-  Set<String> lookup(String word, {bool expand = false}) {
+  Set<String> lookup(String word) {
     var matches = _lookup('', word);
-    if (matches.isNotEmpty) {
-      if (!expand) {
-        return {word};
-      } else {
-        return matches;
-      }
-    }
-    return {};
+    return matches;
   }
 
   Set<String> _lookup(String start, String rest) {
@@ -113,26 +106,78 @@ class Wordle {
   Set<String> solution(String? correct, List<String> present, String? absent,
       List<String> guesses) {
     var correctStr = correct ?? '?????';
-    var absentStr = absent ?? '?????';
-    var invalid = <String>{};
-    var allChar = <String>{};
-    addCharsToSet(allChar, correctStr);
-    for (var presentStr in present) {
-      addCharsToSet(allChar, presentStr);
-    }
-    addCharsToSet(invalid, absentStr);
-    for (var g in guesses) {
-      for (var i = 0; i < g.length; i++) {
-        var c = g[i];
-        if (!allChar.contains(c)) invalid.add(c);
+
+    // The absent and present options are alternatives
+    var invalidChars = <String>{};
+    if (absent == null) {
+      // Compute absent from present, correct and guesses
+      var validChars = <String>{};
+      addCharsToSet(validChars, correctStr);
+      for (var presentStr in present) {
+        addCharsToSet(validChars, presentStr);
       }
+      for (var g in guesses) {
+        for (var i = 0; i < g.length; i++) {
+          var c = g[i];
+          if (!validChars.contains(c)) invalidChars.add(c);
+        }
+      }
+    } else {
+      addCharsToSet(invalidChars, absent);
+      // Compute present from absent, correct and guesses
+      var newMaybe = <String>[];
+      var oldMaybe = List.from(present);
+      for (var g in guesses) {
+        // Remove correct and absent characters from guess to give present
+        var m = '';
+        var rest = '';
+        for (var i = 0; i < g.length; i++) {
+          var c = g[i];
+          if (correctStr[i] == c) {
+            rest += '?';
+            m += '?';
+          } else if (absent.contains(c)) {
+            rest += correctStr[i];
+            m += '?';
+          } else {
+            rest += correctStr[i];
+            m += c;
+          }
+        }
+        // Remove present characters that appear in remaining correct
+        for (var i = 0; i < m.length; i++) {
+          var c = m[i];
+          if (c != '?' && rest.contains(c)) {
+            // Character in correct, so consume it
+            rest = rest.replaceFirst(c, '?');
+            m = m.replaceFirst(c, '?', i);
+          } else if (c != '?' && m.contains(c, i + 1)) {
+            // Character is duplicated in present, so remove this one
+            m = m.replaceFirst(c, '?', i);
+          }
+        }
+        if (m != '?????') {
+          if (!newMaybe.contains(m)) {
+            newMaybe.add(m);
+            if (oldMaybe.isNotEmpty && !oldMaybe.remove(m)) {
+              // print('Inconsistent options, missing -m $m');
+            }
+          }
+        }
+      }
+      if (oldMaybe.isNotEmpty) {
+        // print('Inconsistent options, missing -m $oldMaybe');
+      }
+      present = newMaybe;
     }
-    var matches = _solution('', correctStr, present, invalid);
+
+    // Get solutions
+    var matches = _solution('', correctStr, present, invalidChars);
     return matches;
   }
 
   Set<String> _solution(
-      String start, String rest, List<String> present, Set<String> invalid,
+      String start, String rest, List<String> present, Set<String> invalidChars,
       [String presentStr = '']) {
     var index = rest.indexOf('?');
     if (index == -1) {
@@ -163,10 +208,10 @@ class Wordle {
     var matches = <String>{};
     var charIndex = start.length + index;
     for (var c in _alphabet.where((c) =>
-        !invalid.contains(c) &&
+        !invalidChars.contains(c) &&
         !present.any((str) => str.length > charIndex && str[charIndex] == c))) {
       matches.addAll(_solution(prefix + c, rest.substring(index + 1), present,
-          invalid, presentStr + c));
+          invalidChars, presentStr + c));
     }
     return matches;
   }

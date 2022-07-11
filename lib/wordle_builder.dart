@@ -40,7 +40,7 @@ class WordleBuilder {
 
   /// Compress dictionary file into a string.
   String? compressWordle(String dictionary,
-      {bool statistics = false,
+      {bool statistics = true,
       bool verbose = false,
       bool useLookup = false,
       int quickSize = -1}) {

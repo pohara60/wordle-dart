@@ -7,40 +7,47 @@ import 'package:test/test.dart';
 void main() {
   group('API', () {
     final wordle = Wordle();
-    test('lookup abba = {abba}', () {
-      expect(wordle.lookup('abba'), {'abba'});
+    test('lookup whin? = {whine, whiny}', () {
+      expect(wordle.lookup('whin?'), {'whine', 'whiny'});
     });
-    test('lookup abc = {}', () {
-      expect(wordle.lookup('abc'), <String>{});
+    test('lookup abcde = {}', () {
+      expect(wordle.lookup('abcde'), <String>{});
     });
-    test('lookup expand ab? = {aba, abb, abo, abs, aby}', () {
-      expect(wordle.lookup('ab?', expand: true),
-          <String>{'aba', 'abb', 'abo', 'abs', 'aby'});
+    test(
+        'solution -c ?a??y -a conetrilhrfxqukbd = {gassy, jazzy, mammy, sappy, sassy, savvy}',
+        () {
+      expect(wordle.solution('?a??y', [], 'conetrilhrfxqukbd', []),
+          {'gassy', 'jazzy', 'mammy', 'sappy', 'sassy', 'savvy'});
+    });
+    test(
+        'solution -c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy = {gassy, sappy, sassy, savvy}',
+        () {
+      expect(
+          wordle.solution(
+              '?a??y',
+              [],
+              'conetrilhrfxqukbd',
+              [
+                'cones',
+                'trial',
+                'other',
+                'feral',
+                'relax',
+                'relay',
+                'quirk',
+                'baddy'
+              ]),
+          {'gassy', 'sappy', 'sassy', 'savvy'});
     });
   });
 
   group('Command line', () {
-    test_command('lookup abba', ['Lookup abba {abba}', 'Score abba = 8']);
-    test_command('anagram --expand --minLength 3 ?bt', [
-      'Anagram ?bt {bat, bet, bit, bot, but, tab, tub}',
-      'Score bat = 5',
-      'Score bet = 5',
-      'Score bit = 5',
-      'Score bot = 5',
-      'Score but = 5',
-      'Score tab = 5',
-      'Score tub = 5',
-    ]);
-    test_command('anagram --expand --minLength 3 --sort tb?', [
-      'Anagram tb? {bat, bet, bit, bot, but, tab, tub}',
-      'Score bat = 5',
-      'Score bet = 5',
-      'Score bit = 5',
-      'Score bot = 5',
-      'Score but = 5',
-      'Score tab = 5',
-      'Score tub = 5',
-    ]);
+    test_command('lookup whin?', ['Lookup whin? = {whine, whiny}']);
+    test_command(
+        'solution -c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy',
+        [
+          'Solution -c ?a??y -a conetrilhrfxqukbd -p [] [cones, trial, other, feral, relax, relay, quirk, baddy] = {gassy, sappy, sassy, savvy}'
+        ]);
   });
 }
 
