@@ -44,39 +44,6 @@ class Wordle {
     'z'
   ];
 
-  static const String WordleLetters =
-      'aaaaaaaaabbccddddeeeeeeeeeeeeffggghhiiiiiiiiijkllllmmnnnnnnooooooooppqrrrrrrssssttttttuuuuvvwwxyyz??';
-
-  static const Map<String, int> WordleValues = {
-    'a': 1,
-    'e': 1,
-    'i': 1,
-    'l': 1,
-    'n': 1,
-    'o': 1,
-    'r': 1,
-    's': 1,
-    't': 1,
-    'u': 1,
-    'd': 2,
-    'g': 2,
-    'b': 3,
-    'c': 3,
-    'm': 3,
-    'p': 3,
-    'f': 4,
-    'h': 4,
-    'v': 4,
-    'w': 4,
-    'y': 4,
-    'k': 5,
-    'j': 8,
-    'x': 8,
-    'q': 10,
-    'z': 10,
-    '?': 0
-  };
-
   Wordle() {
     _initWordle();
   }
@@ -98,7 +65,6 @@ class Wordle {
 
   /// **lookup** legal words, perhaps includng the wildcard '?'.
   ///
-  /// If [expand] is true then wildcards are expanded.
   Set<String> lookup(String word, {bool expand = false}) {
     var matches = _lookup('', word);
     if (matches.isNotEmpty) {
@@ -142,16 +108,19 @@ class Wordle {
     }
   }
 
-  /// **solution** for good and bad letters, with guesses.
+  /// **solution** for good, maybe and bad letters, with guesses.
   ///
-  Set<String> solution(String? good, List<String> maybe, List<String> guesses) {
+  Set<String> solution(
+      String? good, List<String> maybe, String? bad, List<String> guesses) {
     var goodStr = good ?? '?????';
+    var badStr = bad ?? '?????';
     var invalid = <String>{};
     var allChar = <String>{};
     addCharsToSet(allChar, goodStr);
     for (var maybeStr in maybe) {
       addCharsToSet(allChar, maybeStr);
     }
+    addCharsToSet(invalid, badStr);
     for (var g in guesses) {
       for (var i = 0; i < g.length; i++) {
         var c = g[i];
@@ -165,18 +134,11 @@ class Wordle {
   Set<String> _solution(
       String start, String rest, List<String> maybe, Set<String> invalid,
       [String maybeStr = '']) {
-    // print('start=$start');
-    // print('rest=$rest');
-    // print('bad=$bad');
-    // print('invalid=$invalid');
-    // print('maybeStr=$maybeStr');
     var index = rest.indexOf('?');
-    // print('index=$index');
     if (index == -1) {
       var word = start + rest;
       maybeStr = maybeStr.padRight(word.length, '?');
       if (_dictionary.contains(word)) {
-        // print('dictionarySolution: dictionary contains $word');
         // Check that the maybe characters appear in non-fixed positions
         for (var m in maybe) {
           var checkStr = maybeStr;
@@ -195,10 +157,9 @@ class Wordle {
       return {};
     }
 
+    // Wildcard
     var prefix = start + rest.substring(0, index);
     maybeStr = maybeStr.padRight(prefix.length, '?');
-    // print('prefix=$prefix');
-    // Wildcard
     var matches = <String>{};
     var charIndex = start.length + index;
     for (var c in _alphabet.where((c) =>

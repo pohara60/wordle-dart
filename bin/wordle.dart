@@ -89,6 +89,7 @@ For example:
     List<String> maybe = argResults!['maybe'];
     var guesses = argResults!.rest;
     // The bad and maybe options are alternatives, compute maybe from bad and guesses
+    // TODO support bad with no guesses
     if (bad != null) {
       var newMaybe = <String>[];
       var oldMaybe = List.from(maybe);
@@ -137,7 +138,7 @@ For example:
     }
     // Get and print solutions
     final wordle = Wordle();
-    var solutions = wordle.solution(good, maybe, guesses);
+    var solutions = wordle.solution(good, maybe, bad, guesses);
     var args = '-g $good -b ${bad ?? '""'} -m $maybe $guesses';
     printMatches(wordle, 'Solution', args, solutions);
   }
