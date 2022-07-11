@@ -1,114 +1,156 @@
-// Modified version of example at:
-// https://dart.dev/tutorials/web/low-level-html/add-elements#moving-elements
-// Copyright (c) 2012, the Dart project authors.  Please see the
-// AUTHORS file for details. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:html';
 import 'dart:math';
 
 import 'package:wordle/wordle.dart';
 
-// Should remove tiles from here when they are selected otherwise
-// the ratio is off.
-
-List<ButtonElement> buttons = [];
-late Element letterpile;
-late Element result;
-late ButtonElement clearButton;
-late Element lettersValue;
-int wordvalue = 0;
-
+// Wordle package interface
 late Wordle wordle;
-late Element wordleValue;
-late ButtonElement anagramButton;
-late Element anagramList;
 
-void main() {
+enum WordleScore { ABSENT, PRESENT, CORRECT }
+
+// Current secret word
+late String secret;
+
+// The Wordle guesses
+List<List<ButtonElement>> buttons = List.filled(6, []);
+List<List<WordleScore>> scores = List.filled(6, []);
+
+late int currentRow;
+late int currentCol;
+
+late ElementList<ButtonElement> keys;
+late ButtonElement clearButton;
+late ButtonElement solutionButton;
+late Element solutionList;
+
+const letterKeys = [
+  KeyCode.A,
+  KeyCode.B,
+  KeyCode.C,
+  KeyCode.D,
+  KeyCode.E,
+  KeyCode.F,
+  KeyCode.G,
+  KeyCode.H,
+  KeyCode.I,
+  KeyCode.J,
+  KeyCode.K,
+  KeyCode.L,
+  KeyCode.M,
+  KeyCode.N,
+  KeyCode.O,
+  KeyCode.P,
+  KeyCode.Q,
+  KeyCode.R,
+  KeyCode.S,
+  KeyCode.T,
+  KeyCode.U,
+  KeyCode.V,
+  KeyCode.W,
+  KeyCode.X,
+  KeyCode.Y,
+  KeyCode.Z
+];
+const delKeys = [KeyCode.DELETE, KeyCode.BACKSPACE];
+const enterKeys = [KeyCode.ENTER];
+const allKeys = [...letterKeys, ...delKeys, ...enterKeys];
+
+Future main() async {
   wordle = Wordle();
-  letterpile = querySelector('#letterpile')!;
-  result = querySelector('#result')!;
-  lettersValue = querySelector('#lettersValue')!;
-  wordleValue = querySelector('#wordleValue')!;
 
   clearButton = querySelector('#clearButton')! as ButtonElement;
-  clearButton.onClick.listen(newletters);
+  clearButton.onClick.listen(newWord);
 
-  anagramButton = querySelector('#anagramButton')! as ButtonElement;
-  anagramButton.onClick.listen(getAnagrams);
-  anagramList = querySelector('#anagrams')!;
+  solutionButton = querySelector('#solutionButton')! as ButtonElement;
+  solutionButton.onClick.listen(getSolutions);
+  solutionList = querySelector('#solutions')!;
 
-  generateNewLetters();
+  // Creates buttons
+  clearBoard();
+
+  keys = querySelectorAll('.key');
+  for (var key in keys) {
+    key.onClick.listen(handleClick);
+  }
+
+  while (true) {
+    KeyboardEvent k = await getkey(allKeys);
+    handleKey(k.keyCode);
+  }
 }
 
-void moveLetter(Event e) {
-  var letter = e.target! as Element;
-  if (letter.parent == letterpile) {
-    result.children.add(letter);
-    wordvalue += Wordle.wordleValues[letter.text]!;
-    lettersValue.text = '$wordvalue';
+void handleClick(Event e) {
+  var button = e.currentTarget as ButtonElement;
+  var keyCode = 0;
+  if (button.text == 'ENTER') {
+    keyCode = KeyCode.ENTER;
+  } else if (button.text == 'BKSP') {
+    keyCode = KeyCode.BACKSPACE;
   } else {
-    letterpile.children.add(letter);
-    wordvalue -= Wordle.wordleValues[letter.text]!;
-    lettersValue.text = '$wordvalue';
+    keyCode = button.text!.codeUnitAt(0);
   }
+  handleKey(keyCode);
+}
 
-  // Get Word, show score if it is legal
-  var word = getWord(result);
-  if (wordle.lookup(word).isNotEmpty) {
-    wordleValue.text = wordle.score(word).toString();
-  } else {
-    wordleValue.text = '';
+void handleKey(int keyCode) {
+  if (letterKeys.contains(keyCode)) {
+    if (currentCol < 5) {
+      buttons[currentRow][currentCol].text = String.fromCharCode(keyCode);
+      currentCol++;
+    }
+  } else if (delKeys.contains(keyCode)) {
+    if (currentCol > 0) {
+      currentCol--;
+      buttons[currentRow][currentCol].text = ' ';
+    }
+  } else if (enterKeys.contains(keyCode)) {
+    if (currentCol == 5 && currentRow < 6) {
+      getScore();
+      currentRow++;
+      currentCol = 0;
+    }
   }
 }
 
-void newletters(Event e) {
-  letterpile.children.clear();
-  result.children.clear();
-  anagramList.children.clear();
-  generateNewLetters();
+Future<KeyboardEvent> getkey([List<int>? lst]) async {
+  return document.onKeyDown.firstWhere(
+      (KeyboardEvent e) => ((lst == null) || (lst.contains(e.keyCode))));
 }
 
-void generateNewLetters() {
-  var indexGenerator = Random();
-  wordvalue = 0;
-  lettersValue.text = '';
-  wordleValue.text = '';
-  buttons.clear();
-  for (var i = 0; i < 7; i++) {
-    var letterIndex = indexGenerator.nextInt(Wordle.wordleLetters.length);
-    // Should remove the letter from wordleLetters to keep the
-    // ratio correct.
-    buttons.add(ButtonElement());
-    buttons[i].classes.add('letter');
-    buttons[i].onClick.listen(moveLetter);
-    buttons[i].text = Wordle.wordleLetters[letterIndex];
-    letterpile.children.add(buttons[i]);
-  }
+void newWord(Event e) {
+  solutionList.children.clear();
+  clearBoard();
+  getSecret();
 }
 
-void getAnagrams(Event e) {
-  var word = getWord(letterpile);
-  var anagrams = wordle.anagram(word, expand: true);
-  anagramList.children.clear();
-  for (var anagram in anagrams) {
-    var link = AnchorElement();
-    link.text = anagram + ' (' + wordle.score(anagram).toString() + ')';
-    // ignore: unsafe_html
-    link.href =
-        'https://www.collinsdictionary.com/dictionary/english/' + anagram;
-    link.target = '_blank';
-    link.classes.add('anagram');
-    anagramList.children.add(link);
-    anagramList.children.add(BRElement());
+void clearBoard() {
+  // Clear current guesses
+  for (var r = 0; r < 6; r++) {
+    buttons[r] = [];
+    var guesses = querySelector('#guesses-$r')!;
+    guesses.children.clear();
+    for (var c = 0; c < 5; c++) {
+      var button = ButtonElement();
+      button.classes.add('tile');
+      button.classes.add('absent');
+      button.text = ' ';
+      button.id = 'b-$r-$c';
+      buttons[r].add(button);
+      guesses.children.add(button);
+    }
   }
+  currentRow = 0;
+  currentCol = 0;
 }
 
-String getWord(Element result) {
-  var word = '';
-  for (var letter in result.children) {
-    word += letter.text!;
-  }
-  return word;
+void getSecret() {
+  // Get secret word
+}
+
+void getScore() {
+  // Get score for current row using secret
+}
+
+void getSolutions(Event e) {
+  // Get solutions for current guess scores
 }

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>ToDo</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+    <div class="game" id="game">
+        <div class="board-container" id="board-container">
+            <div class="board" id="board">
+                <div class="row" id="guesses-0">
+                    <div class="tile" data-state="absent" id="b-0-0">A</div>
+                    <div class="tile" data-state="present" id="b-0-1">B</div>
+                    <div class="tile" data-state="correct" id="b-0-2">E</div>
+                    <div class="tile" data-state="absent" id="b-0-3"> </div>
+                    <div class="tile" data-state="absent" id="b-0-4"> </div>
+                </div>
+                <div class="row" id="guesses-1">
+                    <div class="tile" data-state="absent" id="b-1-0"> </div>
+                    <div class="tile" data-state="absent" id="b-1-1"> </div>
+                    <div class="tile" data-state="absent" id="b-1-2"> </div>
+                    <div class="tile" data-state="absent" id="b-1-3"> </div>
+                    <div class="tile" data-state="absent" id="b-1-4"> </div>
+                </div>
+                <div class="row" id="guesses-2">
+                    <div class="tile" data-state="absent" id="b-2-0"> </div>
+                    <div class="tile" data-state="absent" id="b-2-1"> </div>
+                    <div class="tile" data-state="absent" id="b-2-2"> </div>
+                    <div class="tile" data-state="absent" id="b-2-3"> </div>
+                    <div class="tile" data-state="absent" id="b-2-4"> </div>
+                </div>
+                <div class="row" id="guesses-3">
+                    <div class="tile" data-state="absent" id="b-3-0"> </div>
+                    <div class="tile" data-state="absent" id="b-3-1"> </div>
+                    <div class="tile" data-state="absent" id="b-3-2"> </div>
+                    <div class="tile" data-state="absent" id="b-3-3"> </div>
+                    <div class="tile" data-state="absent" id="b-3-4"> </div>
+                </div>
+                <div class="row" id="guesses-4">
+                    <div class="tile" data-state="absent" id="b-4-0"> </div>
+                    <div class="tile" data-state="absent" id="b-4-1"> </div>
+                    <div class="tile" data-state="absent" id="b-4-2"> </div>
+                    <div class="tile" data-state="absent" id="b-4-3"> </div>
+                    <div class="tile" data-state="absent" id="b-4-4"> </div>
+                </div>
+                <div class="row" id="guesses-5">
+                    <div class="tile" data-state="absent" id="b-5-0"> </div>
+                    <div class="tile" data-state="absent" id="b-5-1"> </div>
+                    <div class="tile" data-state="absent" id="b-5-2"> </div>
+                    <div class="tile" data-state="absent" id="b-5-3"> </div>
+                    <div class="tile" data-state="absent" id="b-5-4"> </div>
+                </div>
+            </div>
+        </div>
+        <div class="keyboard">
+            <div class="keyboard-row">
+                <button type="button" data-key="q" class="key">q</button>
+                <button type="button" data-key="w" class="key">w</button>
+                <button type="button" data-key="e" class="key" data-state="correct">e</button>
+                <button type="button" data-key="r" class="key" data-state="correct">r</button>
+                <button type="button" data-key="t" class="key" data-state="correct">t</button>
+                <button type="button" data-key="y" class="key">y</button>
+                <button type="button" data-key="u" class="key">u</button>
+                <button type="button" data-key="i" class="key">i</button>
+                <button type="button" data-key="o" class="key" data-state="absent">o</button>
+                <button type="button" data-key="p" class="key">p</button>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-half"></div>
+                <button type="button" data-key="a" class="key" data-state="absent">a</button>
+                <button type="button" data-key="s" class="key" data-state="absent">s</button>
+                <button type="button" data-key="d" class="key" data-state="absent">d</button>
+                <button type="button" data-key="f" class="key">f</button>
+                <button type="button" data-key="g" class="key">g</button>
+                <button type="button" data-key="h" class="key" data-state="correct">h</button>
+                <button type="button" data-key="j" class="key">j</button>
+                <button type="button" data-key="k" class="key">k</button>
+                <button type="button" data-key="l" class="key">l</button>
+                <div class="keyboard-half"></div>
+            </div>
+            <div class="keyboard-row">
+                <button type="button" data-key="↵" class="key key-oneAndAHalf">enter</button>
+                <button type="button" data-key="z" class="key">z</button>
+                <button type="button" data-key="x" class="key">x</button>
+                <button type="button" data-key="c" class="key" data-state="absent">c</button>
+                <button type="button" data-key="v" class="key">v</button>
+                <button type="button" data-key="b" class="key" data-state="correct">b</button>
+                <button type="button" data-key="n" class="key" data-state="absent">n</button>
+                <button type="button" data-key="m" class="key">m</button>
+                <button type="button" data-key="←" class="key key-oneAndAHalf">BKSP </button>
+            </div>
+        </div>
+    </div>
+</body>
+<style>
+    :root {
+        font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 16px;
+    }
+
+    .tile[data-state=absent] {
+        background-color: #787c7e;
+    }
+
+    .tile[data-state=correct] {
+        background-color: #6aaa64;
+    }
+
+    .tile[data-state=present] {
+        background-color: #c9b458;
+    }
+
+    .tile {
+        width: 100%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        color: white;
+        margin: 2px;
+        padding: 4px;
+        line-height: 2rem;
+        font-weight: bold;
+        vertical-align: middle;
+        box-sizing: border-box;
+        text-transform: uppercase;
+        user-select: none;
+    }
+
+    .tile::before {
+        content: "";
+        display: inline-block;
+        padding-bottom: 100%;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        grid-gap: 5px;
+    }
+
+    .board-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .board {
+        display: grid;
+        width: 350px;
+        height: 460px;
+        grid-template-rows: repeat(6, 1fr);
+        grid-gap: 5px;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .game {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .keyboard {
+        height: 200px;
+        margin: 0 8px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .keyboard-row {
+        display: flex;
+        width: 100%;
+        margin: 0 auto 8px;
+        touch-action: manipulation;
+    }
+
+    .key {
+        font-family: inherit;
+        font-weight: bold;
+        border: 0;
+        padding: 0;
+        margin: 0 6px 0 0;
+        height: 58px;
+        border-radius: 4px;
+        cursor: pointer;
+        user-select: none;
+        background-color: #d3d6da;
+        color: black;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-transform: uppercase;
+    }
+
+    .key:focus {
+        outline: none;
+    }
+
+    .key:last-of-type {
+        margin: 0;
+    }
+
+    .key[data-state=correct] {
+        background-color: #6aaa64;
+        color: white;
+    }
+
+    .key[data-state=present] {
+        background-color: #c9b458;
+        color: white;
+    }
+
+    .key[data-state=absent] {
+        background-color: #787c7e;
+        color: black;
+    }
+
+    .keyboard-half {
+        flex: 0.5;
+    }
+
+    .key-oneAndAHalf {
+        flex: 1.5;
+        font-size: 12px;
+    }
+</style>
+
+</html>

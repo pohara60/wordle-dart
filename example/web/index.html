@@ -12,24 +12,67 @@
 
 <body>
 
-    <h1>Wordle</h1>
-
-    <h3>Pile:</h3>
-    <div id="letterpile">
+    <div class="game" id="game">
+        <div class="board-container" id="board-container">
+            <div class="board" id="board">
+                <div class="row" id="guesses-0">
+                </div>
+                <div class="row" id="guesses-1">
+                </div>
+                <div class="row" id="guesses-2">
+                </div>
+                <div class="row" id="guesses-3">
+                </div>
+                <div class="row" id="guesses-4">
+                </div>
+                <div class="row" id="guesses-5">
+                </div>
+            </div>
+        </div>
+        <div class="keyboard">
+            <div class="keyboard-row">
+                <button type="button" class="key">Q</button>
+                <button type="button" class="key">W</button>
+                <button type="button" class="key">E</button>
+                <button type="button" class="key">R</button>
+                <button type="button" class="key">T</button>
+                <button type="button" class="key">Y</button>
+                <button type="button" class="key">U</button>
+                <button type="button" class="key">I</button>
+                <button type="button" class="key">O</button>
+                <button type="button" class="key">P</button>
+            </div>
+            <div class="keyboard-row">
+                <div class="keyboard-half"></div>
+                <button type="button" class="key">A</button>
+                <button type="button" class="key">S</button>
+                <button type="button" class="key">D</button>
+                <button type="button" class="key">F</button>
+                <button type="button" class="key">G</button>
+                <button type="button" class="key">H</button>
+                <button type="button" class="key">J</button>
+                <button type="button" class="key">K</button>
+                <button type="button" class="key">L</button>
+                <div class="keyboard-half"></div>
+            </div>
+            <div class="keyboard-row">
+                <button type="button" class="key key-oneAndAHalf">ENTER</button>
+                <button type="button" class="key">Z</button>
+                <button type="button" class="key">X</button>
+                <button type="button" class="key">C</button>
+                <button type="button" class="key">V</button>
+                <button type="button" class="key">B</button>
+                <button type="button" class="key">M</button>
+                <button type="button" class="key">N</button>
+                <button type="button" class="key key-oneAndAHalf">BKSP</button>
+            </div>
+        </div>
     </div>
 
-    <h3>Word:</h3>
-    <div id="result">
-    </div>
-    <h3>Letters Value:</h3>
-    <p id="lettersValue"></p>
-    <h3>Wordle Value:</h3>
-    <p id="wordleValue"></p>
-
-    <button id="clearButton"> new letters </button>
+    <button id="clearButton"> new word </button>
     <br>
-    <button id="anagramButton"> anagrams </button>
-    <div id="anagrams">
+    <button id="solutionButton"> solutions </button>
+    <div id="solutions">
     </div>
 </body>
 
