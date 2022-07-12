@@ -1,5 +1,4 @@
 import 'dart:html';
-import 'dart:math';
 
 import 'package:wordle/wordle.dart';
 
@@ -10,13 +9,16 @@ late Wordle wordle;
 late String secret;
 
 // The Wordle guesses
-List<List<ButtonElement>> buttons = List.filled(6, []);
-List<List<WordleScore>> scores = List.filled(6, []);
+const NUM_GUESSES = 6;
+const NUM_LETTERS = 5;
+List<List<DivElement>> tiles = List.filled(NUM_GUESSES, []);
+List<List<WordleScore>> scores = List.filled(NUM_GUESSES, []);
 
-late int currentRow;
-late int currentCol;
+late int currentGuess;
+late int currentLetter;
 
 late ElementList<ButtonElement> keys;
+late List<WordleScore?> keyScores;
 late ButtonElement clearButton;
 late ButtonElement solutionButton;
 late Element solutionList;
@@ -63,13 +65,14 @@ Future main() async {
   solutionButton.onClick.listen(getSolutions);
   solutionList = querySelector('#solutions')!;
 
-  // Creates buttons
-  clearBoard();
-
+  // Get key controls
   keys = querySelectorAll('.key');
   for (var key in keys) {
     key.onClick.listen(handleClick);
   }
+
+  // New game
+  newWord(null);
 
   while (true) {
     KeyboardEvent k = await getkey(allKeys);
@@ -91,21 +94,26 @@ void handleClick(Event e) {
 }
 
 void handleKey(int keyCode) {
+  if (currentGuess == NUM_GUESSES) {
+    // Game over
+    return;
+  }
   if (letterKeys.contains(keyCode)) {
-    if (currentCol < 5) {
-      buttons[currentRow][currentCol].text = String.fromCharCode(keyCode);
-      currentCol++;
+    if (currentLetter < NUM_LETTERS) {
+      tiles[currentGuess][currentLetter].text = String.fromCharCode(keyCode);
+      currentLetter++;
     }
   } else if (delKeys.contains(keyCode)) {
-    if (currentCol > 0) {
-      currentCol--;
-      buttons[currentRow][currentCol].text = ' ';
+    if (currentLetter > 0) {
+      currentLetter--;
+      tiles[currentGuess][currentLetter].text = ' ';
     }
   } else if (enterKeys.contains(keyCode)) {
-    if (currentCol == 5 && currentRow < 6) {
-      getScore();
-      currentRow++;
-      currentCol = 0;
+    if (currentLetter == NUM_LETTERS && currentGuess < NUM_GUESSES) {
+      if (getScore()) {
+        currentGuess++;
+        currentLetter = 0;
+      }
     }
   }
 }
@@ -115,38 +123,115 @@ Future<KeyboardEvent> getkey([List<int>? lst]) async {
       (KeyboardEvent e) => ((lst == null) || (lst.contains(e.keyCode))));
 }
 
-void newWord(Event e) {
+void newWord(Event? e) {
+  if (e != null) {
+    // Prevent button consuing characters
+    //e.preventDefault();
+    var button = e.currentTarget as ButtonElement;
+    button.blur();
+  }
   solutionList.children.clear();
+  // Re-create tile controls
   clearBoard();
+  // Get secret word
   getSecret();
+  // Clear keyboard
+  keyScores = List.filled(keys.length, null);
+  for (var key in keys) {
+    key.classes.removeAll(['keyAbsent', 'keyPresent', 'keyCorrect']);
+    key.classes.add('keyUnscored');
+  }
 }
 
 void clearBoard() {
   // Clear current guesses
-  for (var r = 0; r < 6; r++) {
-    buttons[r] = [];
+  for (var r = 0; r < NUM_GUESSES; r++) {
+    tiles[r] = [];
     var guesses = querySelector('#guesses-$r')!;
     guesses.children.clear();
-    for (var c = 0; c < 5; c++) {
-      var button = ButtonElement();
-      button.classes.add('tile');
-      button.classes.add('absent');
-      button.text = ' ';
-      button.id = 'b-$r-$c';
-      buttons[r].add(button);
-      guesses.children.add(button);
+    for (var c = 0; c < NUM_LETTERS; c++) {
+      var tile = DivElement();
+      tile.classes.add('tile');
+      tile.classes.add('unscored');
+      tile.text = ' ';
+      tile.id = 'b-$r-$c';
+      tiles[r].add(tile);
+      guesses.children.add(tile);
     }
   }
-  currentRow = 0;
-  currentCol = 0;
+  currentGuess = 0;
+  currentLetter = 0;
 }
 
 void getSecret() {
   // Get secret word
+  secret = wordle.getSecret();
 }
 
-void getScore() {
+bool getScore() {
   // Get score for current row using secret
+  var input = tiles[currentGuess].fold<String>(
+      '', (previousValue, element) => previousValue + (element.text ?? '?'));
+  var guess = input.toLowerCase();
+  var scores = wordle.getScore(secret, guess);
+  if (scores.length == 0) {
+    // Illegal word
+    return false;
+  }
+
+  var correct = true;
+  for (var i = 0; i < NUM_LETTERS; i++) {
+    var tile = tiles[currentGuess][i];
+    var score = scores[i];
+    tile.classes.remove('unscored');
+    if (score == WordleScore.ABSENT) {
+      tile.classes.add('absent');
+      correct = false;
+    } else if (score == WordleScore.PRESENT) {
+      tile.classes.add('present');
+      correct = false;
+    } else {
+      tile.classes.add('correct');
+    }
+    updateKeyScore(input[i], score);
+  }
+  if (correct) {
+    // Prevent further game play
+    currentGuess = NUM_GUESSES;
+  }
+  return true;
+}
+
+void updateKeyScore(String input, WordleScore score) {
+  var index = keys.indexWhere((k) => k.text == input);
+  var key = keys[index];
+  var oldScore = keyScores[index];
+  var newScore = oldScore;
+  key.classes.remove('keyUnscored');
+  if (score == WordleScore.ABSENT) {
+    if (oldScore == null) {
+      key.classes.add('keyAbsent');
+      newScore = score;
+    }
+  } else if (score == WordleScore.PRESENT) {
+    if (oldScore == null || oldScore == WordleScore.ABSENT) {
+      key.classes.remove('keyAbsent');
+      key.classes.add('keyPresent');
+      newScore = score;
+    }
+  } else {
+    if (oldScore == null ||
+        oldScore == WordleScore.ABSENT ||
+        oldScore == WordleScore.PRESENT) {
+      key.classes.remove('keyAbsent');
+      key.classes.remove('keyPresent');
+      key.classes.add('keyCorrect');
+      newScore = score;
+    }
+  }
+  if (newScore != oldScore) {
+    keyScores[index] = newScore;
+  }
 }
 
 void getSolutions(Event e) {

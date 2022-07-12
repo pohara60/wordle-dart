@@ -48,6 +48,9 @@ void main() {
         WordleScore.ABSENT,
       ]);
     });
+    test('getScore -s npwip xxxxx', () {
+      expect(wordle.getScore('npwip', 'xxxxx'), []);
+    });
   });
 
   group('Command line', () {

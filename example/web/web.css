@@ -3,16 +3,27 @@
   font-size: 16px;
 }
 
+.unscored {
+  background-color: white;
+  color: black;
+  border: 2px solid #d3d6da;}
+
 .absent {
   background-color: #787c7e;
+  color: white;
+  border: none;
 }
 
 .correct {
   background-color: #6aaa64;
+  color: white;
+  border: none;
 }
 
 .present {
   background-color: #c9b458;
+  color: white;
+  border: none;
 }
 
 .tile {
@@ -21,7 +32,6 @@
   justify-content: center;
   align-items: center;
   font-size: 2rem;
-  color: white;
   margin: 2px;
   padding: 4px;
   line-height: 2rem;
@@ -97,8 +107,6 @@
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  background-color: #d3d6da;
-  color: black;
   flex: 1;
   display: flex;
   justify-content: center;
@@ -114,19 +122,24 @@
   margin: 0;
 }
 
-.key[data-state=correct] {
+.keyUnscored {
+  background-color: #d3d6da;
+  color: black;
+}
+
+.keyCorrect {
   background-color: #6aaa64;
   color: white;
 }
 
-.key[data-state=present] {
+.keyPresent {
   background-color: #c9b458;
   color: white;
 }
 
-.key[data-state=absent] {
+.keyAbsent {
   background-color: #787c7e;
-  color: black;
+  color: white;
 }
 
 .keyboard-half {

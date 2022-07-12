@@ -80,22 +80,17 @@ class Wordle {
   }
 
   Set<String> _lookup(String start, String rest) {
-    // print('start=$start');
-    // print('rest=$rest');
     var index = rest.indexOf('?');
-    // print('index=$index');
     if (index == -1) {
       var word = start + rest;
       if (_dictionary.contains(word)) {
-        // print('dictionaryLookup: dictionary contains $word');
         return {word};
       }
       return {};
     }
 
-    var prefix = rest.substring(0, index);
-    // print('prefix=$prefix');
     // Wildcard
+    var prefix = rest.substring(0, index);
     var matches = <String>{};
     for (var c in _alphabet) {
       matches.addAll(_lookup(start + prefix + c, rest.substring(index + 1)));
@@ -236,6 +231,10 @@ class Wordle {
   /// *getScore* for guess of secret.
   ///
   List<WordleScore> getScore(String secret, String guess) {
+    // Do not score illegal words
+    if (_lookup('', guess).isEmpty) {
+      return [];
+    }
     var scoreCorrect = <WordleScore>[];
     var word = affine.decrypt(secret);
     for (var i = 0; i < guess.length; i++) {
