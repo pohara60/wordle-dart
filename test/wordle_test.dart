@@ -8,22 +8,22 @@ void main() {
   group('API', () {
     final wordle = Wordle();
     test('lookup whin? = {whine, whiny}', () {
-      expect(wordle.lookup('whin?'), {'whine', 'whiny'});
+      expect(wordle.lookupWord('whin?'), {'whine', 'whiny'});
     });
     test('lookup abcde = {}', () {
-      expect(wordle.lookup('abcde'), <String>{});
+      expect(wordle.lookupWord('abcde'), <String>{});
     });
     test(
         'solution -c ?a??y -a conetrilhrfxqukbd = {gassy, jazzy, mammy, sappy, sassy, savvy}',
         () {
-      expect(wordle.solution('?a??y', [], 'conetrilhrfxqukbd', []),
+      expect(wordle.getSolution('?a??y', [], 'conetrilhrfxqukbd', []),
           {'gassy', 'jazzy', 'mammy', 'sappy', 'sassy', 'savvy'});
     });
     test(
         'solution -c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy = {gassy, sappy, sassy, savvy}',
         () {
       expect(
-          wordle.solution(
+          wordle.getSolution(
               '?a??y',
               [],
               'conetrilhrfxqukbd',
@@ -39,6 +39,15 @@ void main() {
               ]),
           {'gassy', 'sappy', 'sassy', 'savvy'});
     });
+    test('getScore -s npwip trial', () {
+      expect(wordle.getScore('npwip', 'trial'), [
+        WordleScore.ABSENT,
+        WordleScore.CORRECT,
+        WordleScore.CORRECT,
+        WordleScore.CORRECT,
+        WordleScore.ABSENT,
+      ]);
+    });
   });
 
   group('Command line', () {
@@ -48,6 +57,14 @@ void main() {
         [
           'Solution -c ?a??y -a conetrilhrfxqukbd -p [] [cones, trial, other, feral, relax, relay, quirk, baddy] = {gassy, sappy, sassy, savvy}'
         ]);
+    test_command('getScore -s npwip trial flair rainy arise briar', [
+      'getScore = npwip',
+      'GetScore trial = ACCCA',
+      'GetScore flair = AAPPC',
+      'GetScore rainy = PPCAA',
+      'GetScore arise = PCCAA',
+      'GetScore briar = CCCCC',
+    ]);
   });
 }
 

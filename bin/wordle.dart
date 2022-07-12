@@ -12,6 +12,8 @@ void main(List<String> arguments) async {
 
   var runner = CommandRunner('wordle', 'Wordle helper.')
     ..addCommand(SolutionCommand())
+    ..addCommand(GetSecretCommand())
+    ..addCommand(GetScoreCommand())
     ..addCommand(LookupCommand());
   try {
     await runner.run(arguments);
@@ -39,7 +41,7 @@ class LookupCommand extends Command {
     // Get and print lookup
     final wordle = Wordle();
     for (var word in argResults!.rest) {
-      var matches = wordle.lookup(word);
+      var matches = wordle.lookupWord(word);
       printMatches(wordle, 'Lookup', word, matches);
     }
   }
@@ -90,7 +92,7 @@ For example:
     var guesses = argResults!.rest;
     // Get and print solutions
     final wordle = Wordle();
-    var solutions = wordle.solution(correct, present, absent, guesses);
+    var solutions = wordle.getSolution(correct, present, absent, guesses);
     var args = '-c $correct -a ${absent ?? '""'} -p $present $guesses';
     printMatches(wordle, 'Solution', args, solutions);
   }
@@ -99,4 +101,63 @@ For example:
 void printMatches(
     Wordle wordle, String command, String word, Set<String> matches) {
   print('$command $word = $matches');
+}
+
+class GetSecretCommand extends Command {
+  @override
+  final name = 'getSecret';
+  @override
+  final description = 'GetSecret word.';
+
+  // ignore: empty_constructor_bodies
+  GetSecretCommand();
+
+  @override
+  void run() {
+    // Get and print secret
+    final wordle = Wordle();
+    var secret = wordle.getSecret();
+    print('getSecret = $secret');
+  }
+}
+
+class GetScoreCommand extends Command {
+  @override
+  final name = 'getScore';
+  @override
+  final description = 'GetScore for <arguments> that guess the secret word.';
+
+  // ignore: empty_constructor_bodies
+  GetScoreCommand() {
+    argParser.addOption(
+      'secret',
+      abbr: 's',
+      mandatory: true,
+      help: 'The secret word, obtained using getSecret.',
+    );
+  }
+
+  @override
+  void run() {
+    // Get score for each argument
+    String secret = argResults!['secret']!;
+    print('getScore = $secret');
+    final wordle = Wordle();
+    for (var guess in argResults!.rest) {
+      var scores = wordle.getScore(secret, guess);
+      printScores(wordle, 'GetScore', guess, scores);
+    }
+  }
+}
+
+void printScores(
+    Wordle wordle, String command, String guess, List<WordleScore> scores) {
+  var score = scores.fold<String>(
+      '',
+      (value, element) =>
+          value +
+          (element == WordleScore.ABSENT
+              ? 'A'
+              : (element == WordleScore.PRESENT ? 'P' : 'C')));
+  print('$command $guess = $score');
 }

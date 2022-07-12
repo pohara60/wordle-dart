@@ -4,11 +4,17 @@
 /// https://en.wikipedia.org/wiki/Collins_Wordle_Words).
 library wordle;
 
+import 'dart:math';
+
 import './src/buffer.dart';
+import 'affine.dart';
 //import './Wordle_builder.dart';
 
 // Part file has compressed dictionary buffer
 part 'nytimes-wordle.dart';
+
+/// Score for a letter in a guess
+enum WordleScore { ABSENT, PRESENT, CORRECT }
 
 /// Provide access to the Wordle API.
 class Wordle {
@@ -44,8 +50,11 @@ class Wordle {
     'z'
   ];
 
+  late Affine affine;
+
   Wordle() {
     _initWordle();
+    affine = Affine(5, 8);
   }
 
   void _initWordle() {
@@ -65,7 +74,7 @@ class Wordle {
 
   /// **lookup** legal words, perhaps includng the wildcard '?'.
   ///
-  Set<String> lookup(String word) {
+  Set<String> lookupWord(String word) {
     var matches = _lookup('', word);
     return matches;
   }
@@ -101,9 +110,9 @@ class Wordle {
     }
   }
 
-  /// **solution** for correct, present and absent letters, with guesses.
+  /// **getSolution** for correct, present and absent letters, with guesses.
   ///
-  Set<String> solution(String? correct, List<String> present, String? absent,
+  Set<String> getSolution(String? correct, List<String> present, String? absent,
       List<String> guesses) {
     var correctStr = correct ?? '?????';
 
@@ -214,5 +223,47 @@ class Wordle {
           invalidChars, presentStr + c));
     }
     return matches;
+  }
+
+  /// *getSecret* word to start a game.
+  ///
+  String getSecret() {
+    var word = _dictionary.elementAt(Random().nextInt(_dictionary.length));
+    var secret = affine.encrypt(word);
+    return secret;
+  }
+
+  /// *getScore* for guess of secret.
+  ///
+  List<WordleScore> getScore(String secret, String guess) {
+    var scoreCorrect = <WordleScore>[];
+    var word = affine.decrypt(secret);
+    for (var i = 0; i < guess.length; i++) {
+      var s = WordleScore.ABSENT;
+      var g = guess[i];
+      if (g == word[i]) {
+        s = WordleScore.CORRECT;
+        // Consume correct letters
+        word.replaceFirst(g, '?', i);
+      }
+      scoreCorrect.add(s);
+    }
+    var scorePresent = <WordleScore>[];
+    for (var i = 0; i < guess.length; i++) {
+      if (scoreCorrect[i] == WordleScore.CORRECT) {
+        scorePresent.add(WordleScore.CORRECT);
+      } else {
+        var g = guess[i];
+        var index = word.indexOf(g);
+        if (index != -1) {
+          scorePresent.add(WordleScore.PRESENT);
+          // Consume present letters
+          word.replaceFirst(g, '?', index);
+        } else {
+          scorePresent.add(WordleScore.ABSENT);
+        }
+      }
+    }
+    return scorePresent;
   }
 }

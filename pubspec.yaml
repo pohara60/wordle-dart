@@ -2,7 +2,6 @@ name: wordle
 description: An API and command line tool for finding Wordle words
 version: 1.0.0
 #repository: https://github.com/pohara60/dart-wordle
-
 environment:
     sdk: ">=2.12.0 <3.0.0"
 

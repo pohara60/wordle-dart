@@ -6,8 +6,6 @@ import 'package:wordle/wordle.dart';
 // Wordle package interface
 late Wordle wordle;
 
-enum WordleScore { ABSENT, PRESENT, CORRECT }
-
 // Current secret word
 late String secret;
 
