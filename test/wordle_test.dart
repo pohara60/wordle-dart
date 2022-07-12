@@ -40,6 +40,7 @@ void main() {
           {'gassy', 'sappy', 'sassy', 'savvy'});
     });
     test('getScore -s npwip trial', () {
+      // briar
       expect(wordle.getScore('npwip', 'trial'), [
         WordleScore.ABSENT,
         WordleScore.CORRECT,
@@ -50,6 +51,16 @@ void main() {
     });
     test('getScore -s npwip xxxxx', () {
       expect(wordle.getScore('npwip', 'xxxxx'), []);
+    });
+    test('getScore -s qwlgy hilly', () {
+      // milky
+      expect(wordle.getScore('qwlgy', 'hilly'), [
+        WordleScore.ABSENT,
+        WordleScore.CORRECT,
+        WordleScore.CORRECT,
+        WordleScore.ABSENT,
+        WordleScore.ABSENT,
+      ]);
     });
   });
 

@@ -17,7 +17,10 @@ void main(List<String> args) {
       '-c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy',
       matches);
 
-  // Score
+  // Score milky
+  printScores(wordle, 'GetScore', 'hilly', wordle.getScore('qwlgy', 'hilly'));
+
+  // Score briar
   for (var guess in ['trial', 'flair', 'rainy', 'arise', 'briar']) {
     var scores = wordle.getScore('npwip', guess);
     printScores(wordle, 'GetScore', guess, scores);

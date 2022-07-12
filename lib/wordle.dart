@@ -1,25 +1,25 @@
 /// An API for finding and scoring legal Wordle words.
 ///
-/// The legal words are defined in the SOWPODS dictionary (see
-/// https://en.wikipedia.org/wiki/Collins_Wordle_Words).
 library wordle;
 
 import 'dart:math';
 
 import './src/buffer.dart';
 import 'affine.dart';
-//import './Wordle_builder.dart';
 
-// Part file has compressed dictionary buffer
+// Part file has compressed Wordle dictionary buffer
 part 'nytimes-wordle.dart';
+
+// Part file has compressed guess dictionary buffer
+part 'nytimes-guess.dart';
 
 /// Score for a letter in a guess
 enum WordleScore { ABSENT, PRESENT, CORRECT }
 
 /// Provide access to the Wordle API.
 class Wordle {
-  // static const _dictionaryFile = 'lib/sowpods.txt';
-  static final _dictionary = <String>{};
+  static final _wordleDictionary = <String>{};
+  static final _guessDictionary = <String>{};
 
   static const List<String> _alphabet = [
     'a',
@@ -58,17 +58,25 @@ class Wordle {
   }
 
   void _initWordle() {
-    if (_dictionary.isNotEmpty) return;
+    if (_wordleDictionary.isNotEmpty) return;
 
     //final stopwatch = Stopwatch()..start();
-    // Read dictionary from buffer
-    var readBuffer = Buffer(_lookupCharacters, _lookupCharacters2, null,
-        _wordCharacters, _prefixCharacters, _specialCharacters);
-    readBuffer.setCompressedBuffer(_buffer);
+    // Read wordle dictionary from buffer
+    var readBuffer = Buffer(_lookupCharacters_1, _lookupCharacters2_1, null,
+        _wordCharacters_1, _prefixCharacters_1, _specialCharacters_1);
+    readBuffer.setCompressedBuffer(_buffer_1);
     String entry;
     while ((entry = readBuffer.readEntry()) != '') {
-      _dictionary.add(entry);
+      _wordleDictionary.add(entry);
     }
+    // Read guess dictionary from buffer
+    readBuffer = Buffer(_lookupCharacters_2, _lookupCharacters2_2, null,
+        _wordCharacters_2, _prefixCharacters_2, _specialCharacters_2);
+    readBuffer.setCompressedBuffer(_buffer_2);
+    while ((entry = readBuffer.readEntry()) != '') {
+      _guessDictionary.add(entry);
+    }
+    // print('wordle has ${_wordleDictionary.length}, guess has ${_guessDictionary.length}');
     // print('dictionary loaded in ${stopwatch.elapsed}');
   }
 
@@ -83,7 +91,7 @@ class Wordle {
     var index = rest.indexOf('?');
     if (index == -1) {
       var word = start + rest;
-      if (_dictionary.contains(word)) {
+      if (_wordleDictionary.contains(word)) {
         return {word};
       }
       return {};
@@ -187,7 +195,7 @@ class Wordle {
     if (index == -1) {
       var word = start + rest;
       presentStr = presentStr.padRight(word.length, '?');
-      if (_dictionary.contains(word)) {
+      if (_wordleDictionary.contains(word)) {
         // Check that the present characters appear in non-fixed positions
         for (var m in present) {
           var checkStr = presentStr;
@@ -223,7 +231,8 @@ class Wordle {
   /// *getSecret* word to start a game.
   ///
   String getSecret() {
-    var word = _dictionary.elementAt(Random().nextInt(_dictionary.length));
+    var word =
+        _wordleDictionary.elementAt(Random().nextInt(_wordleDictionary.length));
     var secret = affine.encrypt(word);
     return secret;
   }
@@ -231,8 +240,8 @@ class Wordle {
   /// *getScore* for guess of secret.
   ///
   List<WordleScore> getScore(String secret, String guess) {
-    // Do not score illegal words
-    if (_lookup('', guess).isEmpty) {
+    // Do not score illegal guesses
+    if (!_guessDictionary.contains(guess)) {
       return [];
     }
     var scoreCorrect = <WordleScore>[];
@@ -243,7 +252,7 @@ class Wordle {
       if (g == word[i]) {
         s = WordleScore.CORRECT;
         // Consume correct letters
-        word.replaceFirst(g, '?', i);
+        word = word.replaceFirst(g, '?', i);
       }
       scoreCorrect.add(s);
     }
@@ -257,7 +266,7 @@ class Wordle {
         if (index != -1) {
           scorePresent.add(WordleScore.PRESENT);
           // Consume present letters
-          word.replaceFirst(g, '?', index);
+          word = word.replaceFirst(g, '?', index);
         } else {
           scorePresent.add(WordleScore.ABSENT);
         }
