@@ -125,7 +125,7 @@ class Wordle {
 
     // The absent and present options are alternatives
     var invalidChars = <String>{};
-    if (absent == null) {
+    if (absent == null || absent == '') {
       // Compute absent from present, correct and guesses
       var validChars = <String>{};
       addCharsToSet(validChars, correctStr);

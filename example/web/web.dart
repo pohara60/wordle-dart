@@ -12,7 +12,7 @@ late String secret;
 const NUM_GUESSES = 6;
 const NUM_LETTERS = 5;
 List<List<DivElement>> tiles = List.filled(NUM_GUESSES, []);
-List<List<WordleScore>> scores = List.filled(NUM_GUESSES, []);
+List<List<WordleScore>> tileScores = List.filled(NUM_GUESSES, []);
 
 late int currentGuess;
 late int currentLetter;
@@ -180,6 +180,7 @@ bool getScore() {
   }
 
   var correct = true;
+  tileScores[currentGuess] = [];
   for (var i = 0; i < NUM_LETTERS; i++) {
     var tile = tiles[currentGuess][i];
     var score = scores[i];
@@ -194,6 +195,7 @@ bool getScore() {
       tile.classes.add('correct');
     }
     updateKeyScore(input[i], score);
+    tileScores[currentGuess].add(score);
   }
   if (correct) {
     // Prevent further game play
@@ -236,4 +238,68 @@ void updateKeyScore(String input, WordleScore score) {
 
 void getSolutions(Event e) {
   // Get solutions for current guess scores
+  // First get correct letters
+  var correct = '?????';
+  var guesses = <String>[];
+  for (var g = 0; g < currentGuess; g++) {
+    var input = tiles[g].fold<String>(
+        '', (previousValue, element) => previousValue + element.text!);
+    var guess = input.toLowerCase();
+    guesses.add(guess);
+    for (var i = 0; i < NUM_LETTERS; i++) {
+      var c = guess[i];
+      var s = tileScores[g][i];
+      if (s == WordleScore.CORRECT) {
+        if (correct[i] != c) {
+          correct = correct.replaceFirst('?', c, i);
+        }
+      }
+    }
+  }
+  print('getSolutions correct=$correct');
+  if (currentGuess >= NUM_GUESSES) {
+    // Game over
+    return;
+  }
+  // Now get present strings, removing correct letters
+  var presents = <String>[];
+  for (var g = 0; g < currentGuess; g++) {
+    var rest = correct;
+    // Remove correct letters for this guess
+    var guess = guesses[g];
+    for (var i = 0; i < NUM_LETTERS; i++) {
+      var c = guess[i];
+      var s = tileScores[g][i];
+      if (s == WordleScore.CORRECT) {
+        rest = rest.replaceFirst(c, '?', i);
+      }
+    }
+    // Compute present letters using remaining correct letters
+    var present = '';
+    for (var i = 0; i < NUM_LETTERS; i++) {
+      var c = guess[i];
+      var s = tileScores[g][i];
+      var p = '?';
+      if (s == WordleScore.PRESENT) {
+        var index = rest.indexOf(c);
+        if (index != -1) {
+          p = c;
+          rest = rest.replaceFirst(c, '?', index);
+        } else {
+          p = c;
+        }
+      }
+      present += p;
+    }
+    print('getSolutions guess=$guess present=$present');
+    if (present != '?????') {
+      presents.add(present);
+    }
+  }
+  var solutions = wordle.getSolutions(correct, presents, null, guesses);
+  for (var solution in solutions) {
+    var div = DivElement();
+    div.text = solution;
+    solutionList.children.add(div);
+  }
 }
