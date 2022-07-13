@@ -11,8 +11,8 @@ late String secret;
 // The Wordle guesses
 const NUM_GUESSES = 6;
 const NUM_LETTERS = 5;
-List<List<DivElement>> tiles = List.filled(NUM_GUESSES, []);
-List<List<WordleScore>> tileScores = List.filled(NUM_GUESSES, []);
+List<List<DivElement>> board = [];
+List<List<WordleScore>> boardScores = [];
 
 late int currentGuess;
 late int currentLetter;
@@ -65,6 +65,26 @@ Future main() async {
   solutionButton.onClick.listen(getSolutions);
   solutionList = querySelector('#solutions')!;
 
+  // Get tiles
+  var tiles = querySelectorAll('.tile');
+  currentGuess = 0;
+  currentLetter = 0;
+  for (var tile in tiles) {
+    if (currentGuess == board.length) {
+      board.add([]);
+      boardScores.add([]);
+    }
+    board[currentGuess].add(tile as DivElement);
+    if (++currentLetter == NUM_LETTERS) {
+      currentLetter = 0;
+      if (++currentGuess == NUM_GUESSES) {
+        break;
+      }
+    }
+  }
+  assert(currentGuess == NUM_GUESSES && currentLetter == 0,
+      'Board has correct number of tiles');
+
   // Get key controls
   keys = querySelectorAll('.key');
   for (var key in keys) {
@@ -100,13 +120,13 @@ void handleKey(int keyCode) {
   }
   if (letterKeys.contains(keyCode)) {
     if (currentLetter < NUM_LETTERS) {
-      tiles[currentGuess][currentLetter].text = String.fromCharCode(keyCode);
+      board[currentGuess][currentLetter].text = String.fromCharCode(keyCode);
       currentLetter++;
     }
   } else if (delKeys.contains(keyCode)) {
     if (currentLetter > 0) {
       currentLetter--;
-      tiles[currentGuess][currentLetter].text = ' ';
+      board[currentGuess][currentLetter].text = ' ';
     }
   } else if (enterKeys.contains(keyCode)) {
     if (currentLetter == NUM_LETTERS && currentGuess < NUM_GUESSES) {
@@ -130,8 +150,8 @@ void newWord(Event? e) {
     var button = e.currentTarget as ButtonElement;
     button.blur();
   }
-  solutionList.children.clear();
-  // Re-create tile controls
+  clearSolutions();
+  // Clear tile controls
   clearBoard();
   // Get secret word
   getSecret();
@@ -143,20 +163,19 @@ void newWord(Event? e) {
   }
 }
 
+void clearSolutions() {
+  solutionList.children.clear();
+}
+
 void clearBoard() {
   // Clear current guesses
   for (var r = 0; r < NUM_GUESSES; r++) {
-    tiles[r] = [];
-    var guesses = querySelector('#guesses-$r')!;
-    guesses.children.clear();
     for (var c = 0; c < NUM_LETTERS; c++) {
-      var tile = DivElement();
+      var tile = board[r][c];
+      tile.classes.clear();
       tile.classes.add('tile');
       tile.classes.add('unscored');
       tile.text = ' ';
-      tile.id = 'b-$r-$c';
-      tiles[r].add(tile);
-      guesses.children.add(tile);
     }
   }
   currentGuess = 0;
@@ -170,7 +189,7 @@ void getSecret() {
 
 bool getScore() {
   // Get score for current row using secret
-  var input = tiles[currentGuess].fold<String>(
+  var input = board[currentGuess].fold<String>(
       '', (previousValue, element) => previousValue + (element.text ?? '?'));
   var guess = input.toLowerCase();
   var scores = wordle.getScore(secret, guess);
@@ -180,9 +199,9 @@ bool getScore() {
   }
 
   var correct = true;
-  tileScores[currentGuess] = [];
+  boardScores[currentGuess] = [];
   for (var i = 0; i < NUM_LETTERS; i++) {
-    var tile = tiles[currentGuess][i];
+    var tile = board[currentGuess][i];
     var score = scores[i];
     tile.classes.remove('unscored');
     if (score == WordleScore.ABSENT) {
@@ -195,7 +214,7 @@ bool getScore() {
       tile.classes.add('correct');
     }
     updateKeyScore(input[i], score);
-    tileScores[currentGuess].add(score);
+    boardScores[currentGuess].add(score);
   }
   if (correct) {
     // Prevent further game play
@@ -237,18 +256,22 @@ void updateKeyScore(String input, WordleScore score) {
 }
 
 void getSolutions(Event e) {
+  // Prevent button consuing characters
+  //e.preventDefault();
+  var button = e.currentTarget as ButtonElement;
+  button.blur();
   // Get solutions for current guess scores
   // First get correct letters
   var correct = '?????';
   var guesses = <String>[];
   for (var g = 0; g < currentGuess; g++) {
-    var input = tiles[g].fold<String>(
+    var input = board[g].fold<String>(
         '', (previousValue, element) => previousValue + element.text!);
     var guess = input.toLowerCase();
     guesses.add(guess);
     for (var i = 0; i < NUM_LETTERS; i++) {
       var c = guess[i];
-      var s = tileScores[g][i];
+      var s = boardScores[g][i];
       if (s == WordleScore.CORRECT) {
         if (correct[i] != c) {
           correct = correct.replaceFirst('?', c, i);
@@ -269,7 +292,7 @@ void getSolutions(Event e) {
     var guess = guesses[g];
     for (var i = 0; i < NUM_LETTERS; i++) {
       var c = guess[i];
-      var s = tileScores[g][i];
+      var s = boardScores[g][i];
       if (s == WordleScore.CORRECT) {
         rest = rest.replaceFirst(c, '?', i);
       }
@@ -278,7 +301,7 @@ void getSolutions(Event e) {
     var present = '';
     for (var i = 0; i < NUM_LETTERS; i++) {
       var c = guess[i];
-      var s = tileScores[g][i];
+      var s = boardScores[g][i];
       var p = '?';
       if (s == WordleScore.PRESENT) {
         var index = rest.indexOf(c);
