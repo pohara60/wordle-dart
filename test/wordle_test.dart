@@ -16,14 +16,14 @@ void main() {
     test(
         'solution -c ?a??y -a conetrilhrfxqukbd = {gassy, jazzy, mammy, sappy, sassy, savvy}',
         () {
-      expect(wordle.getSolution('?a??y', [], 'conetrilhrfxqukbd', []),
+      expect(wordle.getSolutions('?a??y', [], 'conetrilhrfxqukbd', []),
           {'gassy', 'jazzy', 'mammy', 'sappy', 'sassy', 'savvy'});
     });
     test(
         'solution -c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy = {gassy, sappy, sassy, savvy}',
         () {
       expect(
-          wordle.getSolution(
+          wordle.getSolutions(
               '?a??y',
               [],
               'conetrilhrfxqukbd',

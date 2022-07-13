@@ -80,7 +80,7 @@ class Wordle {
     // print('dictionary loaded in ${stopwatch.elapsed}');
   }
 
-  /// **lookup** legal words, perhaps includng the wildcard '?'.
+  /// **lookupWord** looks up legal words, perhaps includng the wildcard '?'.
   ///
   Set<String> lookupWord(String word) {
     var matches = _lookup('', word);
@@ -113,10 +113,14 @@ class Wordle {
     }
   }
 
-  /// **getSolution** for correct, present and absent letters, with guesses.
+  /// **getSolutions** specified for correct, present and absent letters, with guesses.
   ///
-  Set<String> getSolution(String? correct, List<String> present, String? absent,
-      List<String> guesses) {
+  /// The good argument is optional.
+  /// The absent and present arguments  are alternatives - they may be computed
+  /// from each other using the correct and guesses arguments.
+  /// The guesses argument is optional, but is normally provided.
+  Set<String> getSolutions(String? correct, List<String> present,
+      String? absent, List<String> guesses) {
     var correctStr = correct ?? '?????';
 
     // The absent and present options are alternatives
@@ -228,8 +232,9 @@ class Wordle {
     return matches;
   }
 
-  /// *getSecret* word to start a game.
+  /// **getSecret** gets a secret (encrypted) word to start a game.
   ///
+  /// Words come from the small (2K) list of legal NY Times words.
   String getSecret() {
     var word =
         _wordleDictionary.elementAt(Random().nextInt(_wordleDictionary.length));
@@ -237,8 +242,10 @@ class Wordle {
     return secret;
   }
 
-  /// *getScore* for guess of secret.
+  /// **getScore** gets the score for guess of secret.
   ///
+  /// The secret must have been obtained using **getSecret**.
+  /// The guess must be a valid word, in the longer (13K) list of legal NY Times guesses.
   List<WordleScore> getScore(String secret, String guess) {
     // Do not score illegal guesses
     if (!_guessDictionary.contains(guess)) {

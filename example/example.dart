@@ -9,7 +9,7 @@ void main(List<String> args) {
   }
 
   // A fixed Solution example
-  var matches = wordle.getSolution('?a??y', [], 'conetrilhrfxqukbd',
+  var matches = wordle.getSolutions('?a??y', [], 'conetrilhrfxqukbd',
       ['cones', 'trial', 'other', 'feral', 'relax', 'relay', 'quirk', 'baddy']);
   printMatches(
       wordle,

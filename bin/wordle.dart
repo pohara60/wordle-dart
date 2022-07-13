@@ -92,7 +92,7 @@ For example:
     var guesses = argResults!.rest;
     // Get and print solutions
     final wordle = Wordle();
-    var solutions = wordle.getSolution(correct, present, absent, guesses);
+    var solutions = wordle.getSolutions(correct, present, absent, guesses);
     var args = '-c $correct -a ${absent ?? '""'} -p $present $guesses';
     printMatches(wordle, 'Solution', args, solutions);
   }

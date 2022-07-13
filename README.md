@@ -2,9 +2,7 @@
 
 ## TODO
 
-1. Update README!
-2. Add GetSolutions
-3. Improve HTML
+1. Add GetSolutions function to web app
 
 ## Introduction
 
@@ -12,7 +10,17 @@
 https://static.nytimes.com/newsgraphics/2022/01/25/wordle-solver/assets/solutions.txt).
 
 -   The API includes methods to:
-    -   **lookup** legal words, perhaps includng the wildcard '?'.
+    -   **getSecret** gets a secret (encrypted) word to start a game.
+        Words come from the small (2K) list of legal NY Times words.
+    -   **getScore** gets the score for guess of secret.
+        The secret must have been obtained using **getSecret**.
+        The guess must be a valid word, in the longer (13K) list of legal NY Times guesses.
+    -   **lookupWord** looks up legal words, perhaps includng the wildcard '?'.
+    -   **getSolutions** for specified correct, present and absent letters, with guesses.
+        The good argument is optional.
+        The absent and present arguments are alternatives - they may be computed
+        from each other using the correct and guesses arguments.
+        The guesses argument is optional, but is normally provided.
 -   The command line tool provides access to the API from the command line.
 
 ## Installing Wordle
@@ -23,7 +31,7 @@ https://static.nytimes.com/newsgraphics/2022/01/25/wordle-solver/assets/solution
 
     ```
     dependencies:
-      wordle: ^0.1.0
+      wordle: ^1.0.0
     ```
 
 2. Install it
@@ -63,18 +71,6 @@ $ dart run wordle --help
 ...
 ```
 
-This example does a lookup for three letter words including 'a', 'b' and the wildcard '?'.
-
-```bash
-$ dart run wordle lookup --expand ab?
-Lookup ab? {aba, abb, abo, abs, aby}
-Score aba = 5
-Score abb = 7
-Score abo = 5
-Score abs = 5
-Score aby = 8
-```
-
 ### Dart Example
 
 See `example/example.dart`
@@ -83,71 +79,82 @@ See `example/example.dart`
 import 'package:wordle/wordle.dart';
 
 void main(List<String> args) {
-  final wordle = wordle();
+  final wordle = Wordle();
   // Lookup arguments
   for (var word in args) {
-    var matches = wordle.lookup(word, expand: true);
+    var matches = wordle.lookupWord(word);
     printMatches(wordle, 'Lookup', word, matches);
   }
-  // Get anagrams of arguments
-  for (var word in args) {
-    var matches = wordle.anagram(word, expand: true, sort: true);
-    printMatches(wordle, 'Anagram', word, matches);
+
+  // A fixed Solution example
+  var matches = wordle.getSolutions('?a??y', [], 'conetrilhrfxqukbd',
+      ['cones', 'trial', 'other', 'feral', 'relax', 'relay', 'quirk', 'baddy']);
+  printMatches(
+      wordle,
+      'Solution',
+      '-c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy',
+      matches);
+
+  // Score milky
+  printScores(wordle, 'GetScore', 'hilly', wordle.getScore('qwlgy', 'hilly'));
+
+  // Score briar
+  for (var guess in ['trial', 'flair', 'rainy', 'arise', 'briar']) {
+    var scores = wordle.getScore('npwip', guess);
+    printScores(wordle, 'GetScore', guess, scores);
   }
 }
 
 // Print matches with scores
 void printMatches(
-    wordle wordle, String command, String word, Set<String> matches) {
-  print('$command $word $matches');
-  for (var match in matches) {
-    print('Score $match = ${wordle.score(match)}');
-  }
+    Wordle wordle, String command, String word, Set<String> matches) {
+  print('$command $word = $matches');
+}
+
+void printScores(
+    Wordle wordle, String command, String guess, List<WordleScore> scores) {
+  var score = scores.fold<String>(
+      '',
+      (value, element) =>
+          value +
+          (element == WordleScore.ABSENT
+              ? 'A'
+              : (element == WordleScore.PRESENT ? 'P' : 'C')));
+  print('$command $guess = $score');
 }
 ```
 
 Run the example with one or more sets of letters:
 
 ```bash
-$ cd example
-$ dart run example.dart abc
-Lookup abc {}
-Anagram abc {ab, ba, bac, cab}
-Score ab = 4
-Score ba = 4
-Score bac = 7
-Score cab = 7
-$
+dart run ./example/example.dart "whin?"
+Lookup whin? = {whine, whiny}
+Solution -c ?a??y -a conetrilhrfxqukbd cones trial other feral relax relay quirk baddy = {gassy, sappy, sassy, savvy}
+GetScore hilly = ACCAC
+GetScore trial = ACCCA
+GetScore flair = AAPPC
+GetScore rainy = PPCAA
+GetScore arise = PCCAA
 ```
 
 ### Web Example
 
 See `example/web/web.dart`.
 
-This is a version of the wordle example at https://dart.dev/tutorials/web/low-level-html/add-elements#moving-elements,
-modified to use the wordle package.
+This is a version of the wordle game using the wordle package.
 
 Run the example as follows:
 
 ```bash
 $ cd example
 $ webdev serve web
-[INFO] There was output on stdout while compiling the build script snapshot, run with `--verbose` to see it (you will ne[WARNING] Throwing away cached asset graph because the build phases have changed. This most commonly would happen as a result of adding a new dependency or updating your dependencies.
-[WARNING] Throwing away cached asset graph because the language version of some package(s) changed. This would most commonly happen when updating dependencies or changing your min sdk constraint.
-[INFO] Cleaning up outputs from previous builds. completed, took 614ms
-[INFO] There was output on stdout while compiling the build script snapshot, run with `--verbose` to see it (you will ne[INFO] Building new asset graph completed, took 2.7s
-[INFO] Checking for unexpected pre-existing outputs. completed, took 5ms
+[INFO] Reading cached asset graph completed, took 198ms
+[INFO] Checking for updates since last build completed, took 618ms
 [INFO] Serving `web` on http://127.0.0.1:8080
-[INFO] Generating SDK summary completed, took 8.2s
-[WARNING] No actions completed for 15.0s, waiting on:
-  - build_web_compilers:sdk_js on asset:build_web_compilers/$package$
-  - build_web_compilers:entrypoint on web/web.dart
-
-[INFO] Running build completed, took 42.4s
-[INFO] Caching finalized dependency graph completed, took 305ms
-[INFO] Succeeded after 42.7s with 879 outputs (2958 actions)
-[INFO] ----------------------------------------------------------------------------------------------------------------
-[INFO] Injected debugging metadata for entrypoint at http://localhost:8080/web.dart.bootstrap.js
+[INFO] Running build completed, took 1.6s
+[INFO] Caching finalized dependency graph completed, took 114ms
+[INFO] Succeeded after 1.8s with 15 outputs (12 actions)
+[INFO] ------------------------------------------------------------------------------------
 ```
 
 Then open the page `http://127.0.0.1:8080`.
@@ -156,8 +163,8 @@ Then open the page `http://127.0.0.1:8080`.
 
 This documentation is not needed to use the package, just for its development.
 
-The package converts the cleartext dictionary file (lib/nytimes-wordle.txt) into a
-compressed string buffer at package development time, using the Dart
+The package converts the two cleartext dictionary files (lib/nytimes-wordle.txt and nytimes-guess.txt)
+into compressed string buffers at package development time, using the Dart
 **build_runner** package and the command:
 
 ```bash
@@ -165,3 +172,6 @@ dart run build_runner build
 ```
 
 This approach was adopted to provide web client-side access to the dictionary.
+
+(Actually it was copied from my scrabble package, which has a much larger dictionary. It is overkill
+for these much smaller dictionaries!)
