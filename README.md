@@ -1,9 +1,5 @@
 # Wordle Library for Dart
 
-## TODO
-
-1. Add GetSolutions function to web app
-
 ## Introduction
 
 **Wordle** provides an API and command line tool for finding Wordle solutions defined in the NYTimes Wordle dictionary (see

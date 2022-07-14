@@ -306,7 +306,7 @@ void getSolutions(Event e) {
       if (s == WordleScore.PRESENT) {
         var index = rest.indexOf(c);
         if (index != -1) {
-          p = c;
+          // Consume present letter
           rest = rest.replaceFirst(c, '?', index);
         } else {
           p = c;
@@ -323,6 +323,7 @@ void getSolutions(Event e) {
   for (var solution in solutions) {
     var div = DivElement();
     div.text = solution;
+    div.classes.add('solution');
     solutionList.children.add(div);
   }
 }
