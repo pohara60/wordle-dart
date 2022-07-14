@@ -5,7 +5,7 @@ library wordle;
 import 'dart:math';
 
 import './src/buffer.dart';
-import 'affine.dart';
+import './src/affine.dart';
 
 // Part file has compressed Wordle dictionary buffer
 part 'nytimes-wordle.dart';

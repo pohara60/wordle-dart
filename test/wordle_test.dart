@@ -59,7 +59,7 @@ void main() {
         WordleScore.CORRECT,
         WordleScore.CORRECT,
         WordleScore.ABSENT,
-        WordleScore.ABSENT,
+        WordleScore.CORRECT,
       ]);
     });
   });
