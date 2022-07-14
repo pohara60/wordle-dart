@@ -275,6 +275,7 @@
             ],
         },
         {
+            // Credit https://stackoverflow.com/a/69566999/6721549
             "name": "Debug Build",
             "request": "launch",
             "program": ".dart_tool/build/entrypoint/build.dart",
